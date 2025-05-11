@@ -2,6 +2,7 @@
   "dependencies": {
     "@azure-rest/ai-inference": "^1.0.0-beta.6",
     "@azure/core-auth": "^1.9.0",
+    "chalk": "^5.4.1",
     "commander": "^13.1.0"
   }
 }

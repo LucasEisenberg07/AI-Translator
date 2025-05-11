@@ -2,47 +2,53 @@ import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 import { program } from 'commander';
 import readline from 'readline';
+import chalk from 'chalk';
 
-const token = process.env["GITHUB_TOKEN"];
+const token = process.env["OPEN_AI_KEY"];
 const endpoint = "https://api.openai.com/v1";
-let model = "gpt-4.1-nano";
+const model = "gpt-4.1-nano";
 const startingLanguage = "English";
 const message = `Translate the following phrase into the specified language from ${startingLanguage}. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language:`;
-let endingLanguages;
 let phrases = [];
+const sampleLanguages = ["Spanish", "French", "German", "Chinese"];
 const wrongAnswers = new Map();
-let globalContext = "";
 const contextMap = new Map();
+
+if (!token) {
+    console.error(chalk.red("Please set the OPEN_AI_KEY environment variable."));
+    process.exit(1);
+}
 
 const client = ModelClient(
     endpoint,
     new AzureKeyCredential(token),
 );
-const sampleLanguages = ["Spanish", "French", "German", "Chinese"];
+
 
 program
-    .option('-l, --languages <languages>', 'Comma-separated list of languages to translate into', (value) => value.split(','))
-    .option('-m, --model <model>', 'Model to use for translation', model)
+    .option('-l, --languages <languages>', 'Comma-separated list of languages to translate into', (value) => value.split(','), sampleLanguages)
     .option('-s, --starting-language <language>', 'Language to translate from', startingLanguage)
     .option('-p, --phrases <phrases>', 'Comma-separated list of phrases to translate', (value) => value.split(','))
-    .option('-c, --context <context>', 'Context for translation', 'context')
+    .option('-c, --context <context>', 'Context for translation', "")
+    .option('-j, --json', 'Output in JSON format')
     .parse(process.argv);
 
 phrases = program.opts().phrases;
-globalContext = program.opts().context;
-endingLanguages = program.opts().languages;
+
+const globalContext = program.opts().context;
+
+const outputToJson = program.opts().json ? true : false;
 
 if (!phrases || phrases.length === 0) {
-    console.warn("No phrases provided. Using the default phrases: 'Hello, how are you?', 'Goodbye!'.");
+    console.warn(chalk.yellow("No phrases provided. Using the default phrases: 'Hello, how are you?', 'Goodbye!'."));
     phrases = ["Hello, how are you?", "Goodbye!"];
 }
 
-if (!program.opts().languages || program.opts().languages.length === 0) {
-    console.warn(`No languages provided. Using default languages: "${sampleLanguages.join(', ')}".`);
-    endingLanguages = sampleLanguages;
-}
+const endingLanguages = program.opts().languages;
 
-endingLanguages = program.opts().languages || sampleLanguages;
+if (endingLanguages === sampleLanguages) {
+    console.warn(chalk.yellow(`No languages provided. Using default languages: "${sampleLanguages.join(', ')}".`));
+}
 
 const translations = new Map();
 
@@ -64,12 +70,7 @@ async function translatePhrases() {
     }
 
     console.log("Translations:");
-    for (const [language, languageTranslations] of translations.entries()) {
-        console.log(`\n${language}:`);
-        for (const [phrase, translation] of languageTranslations.entries()) {
-            console.log(`  "${phrase}" -> "${translation}"`);
-        }
-    }
+    printTranslations();
 
     regenerateTranslations();
 }
@@ -85,7 +86,7 @@ async function translatePhrase(phrase, language) {
         body: {
             messages: [
                 { role: "system", content: "" },
-                { role: "user", content: `${message} "${phrase}" into ${language}${contextForLanguage.length > 0 ? `, with context: ${contextForLanguage.join(', ')}` : ''}. ${(wrongAnswersForLanguage.length > 0 ? `Previously incorrect translations: ${wrongAnswersForLanguage.join(', ')}` : '')}` },
+                { role: "user", content: `${message} "${phrase}" into ${language}${contextForLanguage.length > 0 ? `, here is some additional context for the translation, any context here can fully override anything in the origional phrase: ${contextForLanguage.join(', ')}` : ''}. ${(wrongAnswersForLanguage.length > 0 ? `Previously incorrect translations: ${wrongAnswersForLanguage.join(', ')}` : '')}` },
             ],
             temperature: 0.5,
             model: model,
@@ -94,8 +95,9 @@ async function translatePhrase(phrase, language) {
         },
     });
 
+
     if (isUnexpected(response)) {
-        console.error(`Error translating phrase "${phrase}" to ${language}:`, response.body);
+        console.error(chalk.red(`Error translating phrase "${phrase}" to ${language}:`, response.body));
     }
     return response.body.choices[0].message.content.trim();
 }
@@ -120,7 +122,7 @@ async function regenerateTranslations() {
                     contextMap.set(language, currentContext);
                 }
             }
-            
+
             console.log("Regenerating all translations...\n");
             translations.clear();
             await translatePhrases();
@@ -149,20 +151,28 @@ async function regenerateTranslations() {
                 console.log(`  "${phrase}" -> "${newTranslation}"`);
             }
             regenerateTranslations();
-        } else if (answer.toLowerCase() === "none") {
+        } else if (answer.toLowerCase() === "none" || answer.toLowerCase() === "") {
             console.log("No languages selected for regeneration. Final translations:");
-            for (const [language, languageTranslations] of translations.entries()) {
-                console.log(`\n${language}:`);
-                for (const [phrase, translation] of languageTranslations.entries()) {
-                    console.log(`  "${phrase}" -> "${translation}"`);
-                }
+            printTranslations();
+            if (outputToJson) {
+                console.log("Outputting translations in JSON format:");
+                console.log(JSON.stringify(Object.fromEntries([...translations].map(([language, phrases]) => [language, Object.fromEntries(phrases)])), null, 2));
             }
             rl.close();
         } else {
-            console.log("No valid languages selected for regeneration, restarting...\n");
+            console.log(chalk.red("No valid languages selected for regeneration, restarting...\n"));
             regenerateTranslations();
         }
     });
+}
+
+function printTranslations() {
+    for (const [language, languageTranslations] of translations.entries()) {
+        console.log(`\n${language}:`);
+        for (const [phrase, translation] of languageTranslations.entries()) {
+            console.log(`  "${phrase}" -> "${translation}"`);
+        }
+    }
 }
 
 translatePhrases().catch((error) => {
