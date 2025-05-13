@@ -1,4 +1,3 @@
-import { request } from 'http';
 import { createTranslator} from './translatePhrase.mjs';
 
 import assert from 'assert';

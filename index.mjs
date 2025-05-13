@@ -1,4 +1,4 @@
-import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
+import ModelClient from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 import { program } from 'commander';
 import readline from 'readline';
@@ -90,10 +90,10 @@ async function translatePhrases() {
     console.log("Translations:");
     printTranslations();
 
-    regenerateTranslations();
+    regenerateTranslations(translatePhrase);
 }
 
-async function regenerateTranslations() {
+async function regenerateTranslations(translatePhrase) {
     rl.question('Which languages do you want to regenerate (all, specific language, or none): ', async (answer) => {
         if (answer.toLowerCase() === "all") {
             const additionalContext = await new Promise((resolve) => {
@@ -103,7 +103,7 @@ async function regenerateTranslations() {
             });
             for (const [language, languageTranslations] of translations.entries()) {
                 const wrongAnswersForLanguage = wrongAnswers.get(language) || [];
-                for (const [_, translation] of languageTranslations.entries()) {
+                for (const translation of languageTranslations.values()) {
                     wrongAnswersForLanguage.push(translation);
                 }
                 wrongAnswers.set(language, wrongAnswersForLanguage);
@@ -126,7 +126,7 @@ async function regenerateTranslations() {
             });
             const wrongAnswersForLanguage = wrongAnswers.get(answer) || [];
             const languageTranslations = translations.get(answer);
-            for (const [_, translation] of languageTranslations.entries()) {
+            for (const translation of languageTranslations.values()) {
                 wrongAnswersForLanguage.push(translation);
             }
             wrongAnswers.set(answer, wrongAnswersForLanguage);
@@ -136,7 +136,7 @@ async function regenerateTranslations() {
                 contextMap.set(answer, currentContext);
             }
             console.log(`Updated translations:`);
-            for (const [phrase, translation] of languageTranslations.entries()) {
+            for (const phrase of languageTranslations.keys()) {
                 const newTranslation = await translatePhrase(phrase, answer, wrongAnswers, contextMap, startingLanguage, client, model, regenerate);
                 languageTranslations.set(phrase, newTranslation);
                 console.log(`  "${phrase}" -> "${newTranslation}"`);
