@@ -1,4 +1,4 @@
-import { createTranslator, translatePhrase } from './translatePhrase.mjs';
+import { createTranslator } from './translatePhrase.mjs';
 import assert from 'assert';
 
 describe('translatePhrase', () => {
