@@ -3,7 +3,7 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import { program } from 'commander';
 import readline from 'readline';
 import chalk from 'chalk';
-import { translatePhrase } from "./translatePhrase.mjs";
+import { createTranslator, createApi } from "./translatePhrase.mjs";
 import { saveTranslations } from "./manageDatabase.mjs";
 
 const token = process.env["OPEN_AI_KEY"];
@@ -67,6 +67,9 @@ const rl = readline.createInterface({
 });
 
 async function translatePhrases() {
+    const api = createApi(client, model);
+    const translatePhrase = createTranslator(api);
+
     for (const language of endingLanguages) {
         const languageTranslations = new Map();
         if (!wrongAnswers.has(language)) {
@@ -78,7 +81,7 @@ async function translatePhrases() {
         for (const phrase of phrases) {
             languageTranslations.set(
                 phrase,
-                await translatePhrase(phrase, language, wrongAnswers, contextMap, startingLanguage, client, model, regenerate)
+                await translatePhrase(phrase, language, wrongAnswers, contextMap, startingLanguage, regenerate)
             );
         }
         translations.set(language, languageTranslations);
