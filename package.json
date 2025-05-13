@@ -14,7 +14,7 @@
     "mocha": "^11.2.2"
   },
   "scripts": {
-    "test": "mocha --timeout 10000",
+    "test": "mocha --timeout 10000 *test.mjs",
     "run": "node ./translate.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
