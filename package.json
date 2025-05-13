@@ -15,7 +15,7 @@
   },
   "scripts": {
     "test": "mocha --timeout 10000 *test.mjs",
-    "run": "node ./translate.mjs",
+    "run": "node ./index.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   }

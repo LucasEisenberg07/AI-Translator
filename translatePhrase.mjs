@@ -51,7 +51,7 @@ export function createTranslator(api) {
 
 export function createApi(client, model) {
     return async function (prompt) {
-        await client.path("/chat/completions", { model }).post({
+        return await client.path("/chat/completions", { model }).post({
             body: {
                 messages: [
                     { role: "system", content: "" },

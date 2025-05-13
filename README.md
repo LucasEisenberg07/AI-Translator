@@ -16,7 +16,7 @@ This is a console-based application that uses AI to translate phrases into diffe
 
 ### 3. Run program
 
-- Run the program with ```node translate.mjs```, add the phrases in ```-p```, and add the output languages in ```-l``` (put both as a comma-seperated list in quotation marks)
+- Run the program with ```node index.mjs```, add the phrases in ```-p```, and add the output languages in ```-l``` (put both as a comma-seperated list in quotation marks)
 
 ### 4. Follow the prompts
 
