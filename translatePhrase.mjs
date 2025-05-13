@@ -37,12 +37,10 @@ export function createTranslator(api) {
         );
 
         const response = await api(prompt);
-
-        if (isUnexpected(response)) {
+        if (!response.isTest && isUnexpected(response)) {
             console.error(chalk.red(`Error translating phrase "${phrase}" to ${language}:`, response.body));
             return "";
         }
-
         const translatedPhrase = response.body.choices[0].message.content.trim();
 
         return translatedPhrase;
