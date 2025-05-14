@@ -86,7 +86,7 @@ async function translatePhrases() {
             translations.set(language, languageTranslations);
         }
     } catch (error) {
-        console.error(chalk.red("Error during translation, aborting"));
+        console.error(chalk.red(error + ", aborting..."));
         process.exit(1);
     }
 
@@ -99,7 +99,7 @@ async function translatePhrases() {
 async function regenerateTranslations(translatePhrase) {
     rl.question('Which languages do you want to regenerate (all, specific language, or none): ', async (answer) => {
         if (answer.toLowerCase() === "all") {
-            await regenerateAllLanguages(translatePhrase);
+            await regenerateAllLanguages();
         } else if (endingLanguages.includes(formatLanguage(answer))) {
             await regenerateForLanguage(answer, translatePhrase);
             console.log(`Regenerated translations for ${answer}:\n`);
@@ -114,7 +114,7 @@ async function regenerateTranslations(translatePhrase) {
     });
 }
 
-async function regenerateAllLanguages(translatePhrase) {
+async function regenerateAllLanguages() {
     const additionalContext = await new Promise((resolve) => {
         rl.question('Any additional context on what went wrong: ', (answer) => {
             resolve(answer);
@@ -166,6 +166,8 @@ async function regenerateForLanguage(language, translatePhrase) {
         currentContext.push(additionalContext);
         contextMap.set(formattedLanguage, currentContext);
     }
+
+    regenerate = true;
 
     console.log(`Updating translations for ${formattedLanguage}:`);
     try {
