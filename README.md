@@ -7,7 +7,7 @@ This is a console-based application that uses AI to translate phrases into diffe
 ### 1. Set up the AI
 
 - Set the OPEN_AI_KEY enviornment varible to your key
-- Change the endpoint if required, right now it is set up for an Open AI Key from https://platform.openai.com/settings/organization/api-keys 
+- Change the endpoint if required, right now it is set up for an Open AI Key from https://platform.openai.com/settings/organization/api-keys (you may need to add tokens, as creating a key from this website does not give any free tokens)
 - Change the model if wanted, right now it is set to the cheapest available
 
 ### 2. Install files
