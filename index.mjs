@@ -3,8 +3,8 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import { program } from 'commander';
 import readline from 'readline';
 import chalk from 'chalk';
-import { createTranslator, createApi } from "./translatePhrase.mjs";
-import { saveTranslations } from "./manageDatabase.mjs";
+import { createTranslator, createApi } from "./lib/translatePhrase.mjs";
+import { saveTranslations } from "./lib/manageDatabase.mjs";
 
 const token = process.env["OPEN_AI_KEY"];
 const endpoint = "https://api.openai.com/v1";
@@ -42,11 +42,9 @@ program
     .parse(process.argv);
 
 phrases = program.opts().phrases;
-
 const globalContext = program.opts().context;
-
 const outputToJson = program.opts().json ? true : false;
-const regenerate = program.opts().regenerate ? true : false;
+let regenerate = program.opts().regenerate ? true : false;
 
 if (!phrases || phrases.length === 0) {
     console.warn(chalk.yellow("No phrases provided. Using the default phrases: " + samplePhrases.join(', ') + "."));
@@ -70,21 +68,26 @@ async function translatePhrases() {
     const api = createApi(client, model);
     const translatePhrase = createTranslator(api);
 
-    for (const language of endingLanguages) {
-        const languageTranslations = new Map();
-        if (!wrongAnswers.has(language)) {
-            wrongAnswers.set(language, []);
+    try {
+        for (const language of endingLanguages) {
+            const languageTranslations = new Map();
+            if (!wrongAnswers.has(language)) {
+                wrongAnswers.set(language, []);
+            }
+            if (!contextMap.has(language)) {
+                contextMap.set(language, globalContext ? [globalContext] : []);
+            }
+            for (const phrase of phrases) {
+                languageTranslations.set(
+                    phrase,
+                    await translatePhrase(phrase, language, wrongAnswers, contextMap, startingLanguage, regenerate)
+                );
+            }
+            translations.set(language, languageTranslations);
         }
-        if (!contextMap.has(language)) {
-            contextMap.set(language, globalContext ? [globalContext] : []);
-        }
-        for (const phrase of phrases) {
-            languageTranslations.set(
-                phrase,
-                await translatePhrase(phrase, language, wrongAnswers, contextMap, startingLanguage, regenerate)
-            );
-        }
-        translations.set(language, languageTranslations);
+    } catch (error) {
+        console.error(chalk.red("Error during translation, aborting"));
+        process.exit(1);
     }
 
     console.log("Translations:");
@@ -96,72 +99,111 @@ async function translatePhrases() {
 async function regenerateTranslations(translatePhrase) {
     rl.question('Which languages do you want to regenerate (all, specific language, or none): ', async (answer) => {
         if (answer.toLowerCase() === "all") {
-            const additionalContext = await new Promise((resolve) => {
-                rl.question('Any additional context on what went wrong: ', (answer) => {
-                    resolve(answer);
-                });
-            });
-            for (const [language, languageTranslations] of translations.entries()) {
-                const wrongAnswersForLanguage = wrongAnswers.get(language) || [];
-                for (const translation of languageTranslations.values()) {
-                    wrongAnswersForLanguage.push(translation);
-                }
-                wrongAnswers.set(language, wrongAnswersForLanguage);
-                if (additionalContext) {
-                    const currentContext = contextMap.get(language) || [];
-                    currentContext.push(additionalContext);
-                    contextMap.set(language, currentContext);
-                }
-            }
-
-            console.log("Regenerating all translations...\n");
-            translations.clear();
-            await translatePhrases();
-            regenerateTranslations();
-        } else if (endingLanguages.includes(answer)) {
-            const additionalContext = await new Promise((resolve) => {
-                rl.question('Any additional context on what went wrong: ', (answer) => {
-                    resolve(answer);
-                });
-            });
-            const wrongAnswersForLanguage = wrongAnswers.get(answer) || [];
-            const languageTranslations = translations.get(answer);
-            for (const translation of languageTranslations.values()) {
-                wrongAnswersForLanguage.push(translation);
-            }
-            wrongAnswers.set(answer, wrongAnswersForLanguage);
-            if (additionalContext) {
-                const currentContext = contextMap.get(answer) || [];
-                currentContext.push(additionalContext);
-                contextMap.set(answer, currentContext);
-            }
-            console.log(`Updated translations:`);
-            for (const phrase of languageTranslations.keys()) {
-                const newTranslation = await translatePhrase(phrase, answer, wrongAnswers, contextMap, startingLanguage, client, model, regenerate);
-                languageTranslations.set(phrase, newTranslation);
-                console.log(`  "${phrase}" -> "${newTranslation}"`);
-            }
+            await regenerateAllLanguages(translatePhrase);
+        } else if (endingLanguages.includes(formatLanguage(answer))) {
+            await regenerateForLanguage(answer, translatePhrase);
+            console.log(`Regenerated translations for ${answer}:\n`);
             regenerateTranslations();
         } else if (answer.toLowerCase() === "none" || answer.toLowerCase() === "") {
-            console.log("No languages selected for regeneration. Final translations:");
-            printTranslations();
-            const translationsObject = Object.fromEntries([...translations].map(([language, phrases]) => [
-                language,
-                Object.fromEntries(phrases),
-            ]));
-
-            saveTranslations(translationsObject, startingLanguage);
-
-            if (outputToJson) {
-                console.log("Outputting translations in JSON format:");
-                console.log(JSON.stringify(translationsObject, null, 2));
-            }
-            rl.close();
+            acceptTranslations();
         } else {
-            console.log(chalk.red("No valid languages selected for regeneration, restarting...\n"));
+            console.log(chalk.red("No valid languages selected for regeneration, please choose one of: " + endingLanguages.join(', ') + ". Restarting...\n"));
             regenerateTranslations();
         }
+
     });
+}
+
+async function regenerateAllLanguages(translatePhrase) {
+    const additionalContext = await new Promise((resolve) => {
+        rl.question('Any additional context on what went wrong: ', (answer) => {
+            resolve(answer);
+        });
+    });
+    for (const [language, languageTranslations] of translations.entries()) {
+        const wrongAnswersForLanguage = wrongAnswers.get(language) || [];
+        for (const translation of languageTranslations.values()) {
+            wrongAnswersForLanguage.push(translation);
+        }
+        wrongAnswers.set(language, wrongAnswersForLanguage);
+        if (additionalContext) {
+            const currentContext = contextMap.get(language) || [];
+            currentContext.push(additionalContext);
+            contextMap.set(language, currentContext);
+        }
+    }
+    console.log("Regenerating all translations...\n");
+    translations.clear();
+    regenerate = true;
+    await translatePhrases();
+    return;
+}
+
+async function regenerateForLanguage(language, translatePhrase) {
+    const formattedLanguage = formatLanguage(language);
+
+    const additionalContext = await new Promise((resolve) => {
+        rl.question('Any additional context on what went wrong: ', (answer) => {
+            resolve(answer);
+        });
+    });
+
+    const wrongAnswersForLanguage = wrongAnswers.get(formattedLanguage) || [];
+    const languageTranslations = translations.get(formattedLanguage);
+
+    if (!languageTranslations) {
+        console.error(chalk.red(`No translations found for language: ${formattedLanguage}`));
+        return;
+    }
+
+    for (const translation of languageTranslations.values()) {
+        wrongAnswersForLanguage.push(translation);
+    }
+    wrongAnswers.set(formattedLanguage, wrongAnswersForLanguage);
+
+    if (additionalContext) {
+        const currentContext = contextMap.get(formattedLanguage) || [];
+        currentContext.push(additionalContext);
+        contextMap.set(formattedLanguage, currentContext);
+    }
+
+    console.log(`Updating translations for ${formattedLanguage}:`);
+    try {
+        for (const phrase of languageTranslations.keys()) {
+            const newTranslation = await translatePhrase(
+                phrase,
+                formattedLanguage,
+                wrongAnswers,
+                contextMap,
+                startingLanguage,
+                client,
+                model,
+                regenerate
+            );
+            languageTranslations.set(phrase, newTranslation);
+            console.log(`  "${phrase}" -> "${newTranslation}"`);
+        }
+    } catch (error) {
+        console.error(chalk.red(`Error regenerating translations for ${formattedLanguage}:`, error));
+        process.exit(1);
+    }
+}
+
+function acceptTranslations() {
+    console.log("No languages selected for regeneration. Final translations:");
+    printTranslations();
+    const translationsObject = Object.fromEntries([...translations].map(([language, phrases]) => [
+        language,
+        Object.fromEntries(phrases),
+    ]));
+
+    saveTranslations(translationsObject, startingLanguage);
+
+    if (outputToJson) {
+        console.log("Outputting translations in JSON format:");
+        console.log(JSON.stringify(translationsObject, null, 2));
+    }
+    rl.close();
 }
 
 function printTranslations() {

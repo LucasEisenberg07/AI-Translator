@@ -1,22 +1,60 @@
 {
-  "dependencies": {
-    "@azure-rest/ai-inference": "^1.0.0-beta.6",
-    "@azure/core-auth": "^1.9.0",
-    "chalk": "^5.4.1",
-    "commander": "^13.1.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.26.0",
-    "@types/node": "^22.15.17",
-    "assert": "^2.1.0",
-    "eslint": "^9.26.0",
-    "globals": "^16.1.0",
-    "mocha": "^11.2.2"
-  },
-  "scripts": {
-    "test": "mocha --timeout 10000 *test.mjs",
-    "run": "node ./index.mjs",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
-  }
+    "name": "ai-translator",
+    "version": "1.0.0",
+    "description": "A library for translating phrases using AI",
+    "main": "index.mjs",
+    "type": "module",
+    "scripts": {
+        "test": "mocha --timeout 10000 *test.mjs",
+        "start": "node ./index.mjs",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix"
+    },
+    "keywords": [
+        "translation",
+        "OpenAI",
+        "GPT",
+        "language",
+        "AI"
+    ],
+    "author": "Lucas Eisenberg",
+    "license": "MIT",
+    "dependencies": {
+        "@azure-rest/ai-inference": "^1.0.0-beta.6",
+        "@azure/core-auth": "^1.9.0",
+        "chalk": "^5.4.1",
+        "commander": "^13.1.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.26.0",
+        "@types/node": "^22.15.17",
+        "assert": "^2.1.0",
+        "eslint": "^9.26.0",
+        "globals": "^16.1.0",
+        "mocha": "^11.2.2"
+    },
+    "files": [
+        "index.mjs",
+        "lib/",
+        "test/",
+        "README.md",
+        "LICENSE",
+        "package-lock.json",
+        "eslint.config.cjs"
+    ],
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LucasEisenberg07/AI-Translator.git"
+    },
+    "directories": {
+        "lib": "lib",
+        "test": "test"
+    },
+    "bugs": {
+        "url": "https://github.com/LucasEisenberg07/AI-Translator/issues"
+    },
+    "homepage": "https://github.com/LucasEisenberg07/AI-Translator#readme"
 }

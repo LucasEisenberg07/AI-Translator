@@ -1,4 +1,4 @@
-import { buildPrompt } from './promptBuilder.mjs';
+import { buildPrompt } from '../lib/promptBuilder.mjs';
 import assert from 'assert';
 
 describe('buildPrompt', () => {
