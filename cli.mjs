@@ -9,7 +9,7 @@ import { createTranslator, createApi } from "./lib/translatePhrase.mjs";
 import { saveTranslations } from "./lib/manageDatabase.mjs";
 import { translate } from "./index.mjs";
 
-const token = process.env["OPEN_AI_KEY"];
+const token = process.env["AUTH_TOKEN"];
 const endpoint = "https://api.openai.com/v1";
 const model = "gpt-4.1-nano";
 let startingLanguage = "English";
@@ -20,7 +20,7 @@ const wrongAnswers = new Map();
 const contextMap = new Map();
 
 if (!token) {
-    console.error(chalk.red("Please set the OPEN_AI_KEY environment variable."));
+    console.error(chalk.red("Please set the AUTH_TOKEN environment variable."));
     process.exit(1);
 }
 
@@ -198,6 +198,7 @@ function acceptTranslations() {
         language,
         Object.fromEntries(phrases),
     ]));
+    saveTranslations(translationsObject);
 
     saveTranslations(translationsObject, startingLanguage);
 

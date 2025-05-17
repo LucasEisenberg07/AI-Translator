@@ -3,12 +3,13 @@ import { createApi, createTranslator } from "./lib/translatePhrase.mjs";
 import chalk from "chalk";
 import ModelClient from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
+import { saveTranslations } from "./lib/manageDatabase.mjs";
 
 export async function translate(phrase, language, context, wrongAnswers, startingLanguage, regenerate, API) {
     if (API === null || API === undefined) {
         const client = ModelClient(
             "https://api.openai.com/v1",
-            new AzureKeyCredential(process.env["OPEN_AI_KEY"]),
+            new AzureKeyCredential(process.env["AUTH_TOKEN"]),
         );
         API = await createApi(client, "gpt-4.1-nano");
     }
@@ -54,4 +55,13 @@ export async function translate(phrase, language, context, wrongAnswers, startin
             console.error(chalk.red("Error translating phrase:", error));
             throw error;
         });
+}
+
+export async function saveTranslation(phrase, startingLanguage, translation, language) {
+    const translationsObject = {
+        [language]: {
+            [phrase]: translation,
+        },
+    };
+    await saveTranslations(translationsObject, startingLanguage)
 }
