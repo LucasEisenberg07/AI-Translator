@@ -5,7 +5,7 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import { program } from 'commander';
 import readline from 'readline';
 import chalk from 'chalk';
-import { createTranslator, createApi } from "./lib/translatePhrase.mjs";
+import { createApi } from "./lib/translatePhrase.mjs";
 import { saveTranslations } from "./lib/manageDatabase.mjs";
 import { translate } from "./index.mjs";
 

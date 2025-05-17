@@ -1,4 +1,3 @@
-import { create } from "domain";
 import { createApi, createTranslator } from "./lib/translatePhrase.mjs";
 import chalk from "chalk";
 import ModelClient from "@azure-rest/ai-inference";
