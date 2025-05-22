@@ -198,7 +198,6 @@ function acceptTranslations() {
         language,
         Object.fromEntries(phrases),
     ]));
-    saveTranslations(translationsObject);
 
     saveTranslations(translationsObject, startingLanguage);
 
