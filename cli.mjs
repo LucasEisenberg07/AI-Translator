@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import ModelClient from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 import { program } from 'commander';
