@@ -3,7 +3,7 @@ import assert from 'assert';
 
 describe('translatePhrase', () => {
     it('creates the correct query', async () => {
-        const expectedPrompt = `Translate the following phrase into the specified language from Kobold. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "Hello, how are you?" into Klingon.`;
+        const expectedPrompt = `Translate the following phrase into the specified language from Kobold. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "Hello, how are you?" into Klingon.`;
         const content = "Yay! This is Klingon for 'Hello, how are you?'";
         const mockApi = async (prompt) => {
             assert.strictEqual(prompt, expectedPrompt);
@@ -60,7 +60,7 @@ describe('translatePhrase', () => {
     });
 
     it('handles wrong answers correctly', async () => {
-        const expectedPrompt = `Translate the following phrase into the specified language from Kobold. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "Hello, how are you?" into Klingon. Previously incorrect translations: Wrong answer 1, Wrong answer 2`;
+        const expectedPrompt = `Translate the following phrase into the specified language from Kobold. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "Hello, how are you?" into Klingon. Previously incorrect translations: Wrong answer 1, Wrong answer 2`;
         const content = "Yay! This is Klingon for 'Hello, how are you?'";
         const mockApi = async (prompt) => {
             assert.strictEqual(prompt, expectedPrompt);
