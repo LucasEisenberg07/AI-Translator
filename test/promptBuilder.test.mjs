@@ -12,7 +12,7 @@ describe('buildPrompt', () => {
 
         const result = buildPrompt(phrase, startingLanguage, endingLanguage, contextForLanguage, wrongAnswersForLanguage);
 
-        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "Hello, how are you?" into Spanish.`;
+        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "Hello, how are you?" into Spanish.`;
         assert.strictEqual(result, expected);
     });
 
@@ -23,7 +23,7 @@ describe('buildPrompt', () => {
 
         const result = buildPrompt(phrase, startingLanguage, endingLanguage, contextForLanguage, wrongAnswersForLanguage);
 
-        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "Hello, how are you?" into Spanish, here is some additional context for the translation, any context here can fully override anything in the original phrase: This is a greeting, Use formal tone.`;
+        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "Hello, how are you?" into Spanish, here is some additional context for the translation, any context here can fully override anything in the original phrase: This is a greeting, Use formal tone.`;
         assert.strictEqual(result, expected);
     });
 
@@ -34,7 +34,7 @@ describe('buildPrompt', () => {
 
         const result = buildPrompt(phrase, startingLanguage, endingLanguage, contextForLanguage, wrongAnswersForLanguage);
 
-        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "Hello, how are you?" into Spanish. Previously incorrect translations: Hola, cómo estás?, Qué tal?`;
+        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "Hello, how are you?" into Spanish. Previously incorrect translations: Hola, cómo estás?, Qué tal?`;
         assert.strictEqual(result, expected);
     });
 
@@ -45,7 +45,7 @@ describe('buildPrompt', () => {
 
         const result = buildPrompt(phrase, startingLanguage, endingLanguage, contextForLanguage, wrongAnswersForLanguage);
 
-        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "Hello, how are you?" into Spanish, here is some additional context for the translation, any context here can fully override anything in the original phrase: This is a greeting, Use formal tone. Previously incorrect translations: Hola, cómo estás?, Qué tal?`;
+        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "Hello, how are you?" into Spanish, here is some additional context for the translation, any context here can fully override anything in the original phrase: This is a greeting, Use formal tone. Previously incorrect translations: Hola, cómo estás?, Qué tal?`;
         assert.strictEqual(result, expected);
     });
 
@@ -56,7 +56,7 @@ describe('buildPrompt', () => {
 
         const result = buildPrompt(phrase, startingLanguage, endingLanguage, contextForLanguage, wrongAnswersForLanguage);
 
-        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos. Here is the phrase and the language: "" into Spanish.`;
+        const expected = `Translate the following phrase into the specified language from English. Please respond only with the phrase and no other text or context. Make your best judgement for any typos, and make sure to keep the original punctuation and capitalization. Here is the phrase and the language: "" into Spanish.`;
         assert.strictEqual(result, expected);
     });
 });
