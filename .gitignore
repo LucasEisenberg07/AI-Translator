@@ -1,2 +1,4 @@
 node_modules
 translations.json
+# Local Netlify folder
+.netlify
