@@ -1,12 +1,9 @@
 [build]
     command = "npm install"
-    functions = './translate/'
-
-[functions]
-    directory = "translate"
+    functions = './functions/'
 
 [[redirects]]
     from = "/translate"
-    to = ".netlify/translate"
+    to = ".netlify/functions/translate"
     status = 200
     force = true
