@@ -11,7 +11,7 @@ export default async (request, context) => {
             headers: { 'Content-Type': 'application/json' }
         });
     }
-
+    const translations = [];
     for (const language of body.languages) {
         const translatedText = await translate(body.phrase, language, body.context, undefined, body.startingLanguage, undefined, undefined, apiKey);
         translations.push({ language, translatedText });
@@ -55,7 +55,3 @@ function validateRequestBody(body) {
     }
     return;
 }
-
-export const config = {
-    path: "/translate",
-};
