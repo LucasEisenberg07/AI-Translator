@@ -7,3 +7,9 @@
     to = ".netlify/functions/translate"
     status = 200
     force = true
+
+[[redirects]]
+    from = "/passthru"
+    to = ".netlify/functions/passthru"
+    status = 200
+    force = true
